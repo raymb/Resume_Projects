@@ -6,6 +6,7 @@ void flushSet(Set *set, int length){
 		set->valid_values[i] = 1 ;
 	}
 }
+
 Set* createSet(int length){
 	Set* new_set = (Set *)malloc(sizeof(Set));
 	if(!new_set){
@@ -20,29 +21,12 @@ Set* createSet(int length){
 	flushSet(new_set, length);
 	return new_set;
 }
+
 void destroySet(Set *set){
 	free(set->valid_values);
 	free(set);
 }
-int not_valid(Board *board,int x, int y ,int z){
-	int i ,j , row = board->row,column = board ->column;
-	if(z == 0)
-		return 0;
-	for(i = 0 ; i< row*column;i++){
-		if(board->grid[x][i] == z && i != y)
-			return 1;
-		if(board->grid[i][y] == z && i != x)
-				return 1;
-	}
-	for(i = (x/row)*row; i < (1+ x/row)*row;i ++)
-		for(j = (y/column)*column; j < (1 + y/column)*column; j++){
-			if(i==x && j==y)
-				continue;
-			if(board->grid[i][j]== z)
-				return 1;
-		}
-	return 0;
-}
+
 void make_valid_values(Set *set,Board *board, int x, int y){
 	int i = 0,row = board-> row ,column = board->column;
 	for(i=0;i < row*column ; i++)
@@ -51,6 +35,14 @@ void make_valid_values(Set *set,Board *board, int x, int y){
 			continue;
 		}
 }
+
+/**
+ * This function randomly choose a valid value in a given set.
+ *
+ * @param set - a pointer to the set
+ * @param length - denotes size of the set
+ * @return
+ */
 
 int get_random_value(Set *set,int length){
 	int rand_value = 0 ,i ,counter = 0 ,res;
@@ -68,6 +60,7 @@ int get_random_value(Set *set,int length){
 	free(options);
 	return res ;
 }
+
 void clear_matrix(int **mat,int size){
 	int i ,j;
 	for(i =0 ; i < size ; i ++)
@@ -75,6 +68,7 @@ void clear_matrix(int **mat,int size){
 			if(mat[i][j])
 				mat[i][j] = 0;
 }
+
 int generator(Sudoku *s,int numtofill){
 	int value, xval, yval,filled_cells = 0;
 	Set *set = createSet(s->board_size);
@@ -93,9 +87,11 @@ int generator(Sudoku *s,int numtofill){
 			return 0;
 		}
 		s->board->grid[xval][yval] = value;
-		filled_cells ++;
+		s->empty_cells--;
+		filled_cells++;
 		flushSet(set,s->board_size);
 	}
+
 	destroySet(set);
 	return 1;
 }

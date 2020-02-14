@@ -6,53 +6,78 @@ void run_game(){
 	Node *list = NULL;
 	int mode = Init, command = -1, erroneous = 0, error = 0;
 	Move *move = NULL;
-	createHead(&list);
+	char path[MAX_LENGTH];
+	if(createHead(&list))
+		return;
 	print_start_of_game();
 	enter_command_print();
 	while(command != EXIT){
-		move = parse(mode);
-		if(!move)
+		if(!(move = parse(mode)))
 			return;
-		printf("Move is %d, X=%d, Y=%d, Z=%d, ", move->command,move->x_val, move->y_val, move->z_val);
-		if(!move->path)
-			printf("NULL in Path\n");
-		else
-			printf("Path=%s.\n", move->path);
+		if(feof(stdin)){
+			move->command =EXIT;
+			destroyMove(move);
+			continue;
+		}
 		switch((command = move->command)){
 			case SOLVE:
-				 if(!(sudoku = solve(sudoku,&list,move)))
-					 return;
+				if((error = load_new_sudoku(&sudoku,&list,move))){
+					if(error >1){
+						command = EXIT;
+						destroyMove(move);
+						continue;
+					}
+					return;
+				}
+				print_board(sudoku, 0);
 				mode = Solve;
 				break;
 			case EDIT:
-				if(has_no_path(&move))
+				if(!move->path){
 					sudoku = createSudoku(3,3);
-				else
-					sudoku = edit(sudoku,&list,move);
-				if(! sudoku)
-					return;
-				print_board(sudoku);
+				}
+				else {
+					if((error = load_new_sudoku(&sudoku,&list,move))){
+						if(error > 1){
+							command = EXIT;
+							destroyMove(move);
+							continue;
+						}
+						return;
+					}
+				}
+				print_board(sudoku, 0);
 				mode = Edit;
 				sudoku->mark_errors = 1;
 				break;
 			case MARK_ERRORS:
-				sudoku->mark_errors = move->x_val;
+				if(move->x_val > 1 || move->x_val < 0)
+					mark_errors_value_print();
+				else{
+					sudoku->mark_errors = move->x_val;
+					print_board(sudoku, 0);
+				}
 				break;
 			case PRINT_BOARD:
-				print_board(sudoku);
+				print_board(sudoku, 0);
 				break;
 			case SET:
-				error = set(move,sudoku,mode,&list, &erroneous);
-				if(error > 1)
+				if((error = set(move,sudoku,mode,&list, &erroneous)) > 1){
 					mode = Init;
+					error = 0;
+				}
 				break;
 			case VALIDATE:
 				error = validate(sudoku, &erroneous);
 				break;
 			case GUESS:
-
+				if(move->threshold > 1 || move->threshold < 0)
+					guess_value_print();
+				else
+					error = guess(sudoku, move->threshold, &list, &erroneous);
+				break;
 			case GENERATE:
-				error = generate(sudoku,move,&list);
+				error = generate(sudoku,move,&list, &erroneous);
 				break;
 			case UNDO:
 				undo(&list,sudoku,0, &erroneous);
@@ -61,13 +86,15 @@ void run_game(){
 				redo(&list,sudoku, &erroneous);
 				break;
 			case SAVE:
-				error = save(sudoku,move,mode, &erroneous);
+				strcpy(path, (move)->path);
+				error = save(sudoku,path,mode, &erroneous);
 				break;
 			case HINT:
 				error = hint(sudoku,move, &erroneous);
 				break;
 			case GUESS_HINT:
-
+				error = guess_hint(sudoku, move->x_val, move->y_val, &erroneous);
+				break;
 			case NUM_SOLUTIONS:
 				error = numsolutions(sudoku, &erroneous);
 				break;
@@ -83,15 +110,16 @@ void run_game(){
 			case INVALIDCOMMAND:
 				invalid_command_print();
 				break;
+			case INVALIDMODECOMMAND:
 			default:
 				break;
 		}
-		if(error)
+		if(error){
 			return;
+		}
 		destroyMove(move);
 		enter_command_print();
 	}
-	exitgame(sudoku,list);
-
+	exitgame(sudoku,&list);
 }
 

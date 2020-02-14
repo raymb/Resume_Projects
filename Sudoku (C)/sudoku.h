@@ -1,12 +1,34 @@
 #ifndef SUDOKU_H_
 #define SUDOKU_H_
 
+/**
+ * Sudoku Summary :
+ *
+ * A container that represents the Sudoku puzzle . Sudoku is a number-placement puzzle where the objective is to fill a 9x9 grid with digits so that
+ * each column, each row, and each 3x3 block contains all digits from 1 to 9. Since the Sudoku grid constraints are defined by column, row and block,
+ * we chose to represent the grid, i.e. the Sudoku play board, by a matrix of Integers. A Sudoku game is being represented by a play board, a solution
+ * board, an errors board and a fixed board which defines the initial play board.
+ * The container supports the following functions:
+ *
+ * createBoard						 - Creates a Sudoku board.
+ * copyBoard 						 - Copies a Sudoku board.
+ * destroyBoard 					 - Frees all memory resources associated with a Sudoku board.
+ * createGrid						 - Creates a Sudoku board grid.
+ * createSudoku						 - Create a Sudoku game.
+ * destroyGrid 						 - Frees all memory associated with Sudoku board grid.
+ * destroySudoku					 - Frees all memory associated with Sudoku game.
+ * print_board						 - Prints the game board.
+ * not_valid						 - Checksif a value is valid in a given cell.
+ *
+ */
+
 #include <stddef.h>
 #include <string.h>
 #include "main_aux.h"
 
+
 /**
- * Type used for the representation of a Sudoku game board.
+ * Type used for the representation of a board.
  */
 typedef struct board{
 	int row;
@@ -97,5 +119,25 @@ void destroyGrid(int **mat,int size);
  * @return
  */
 void destroySudoku(Sudoku *sudoku);
+
+/**
+ * This Function prints the game board.
+ *
+ * @param sudoku - pointer to the sudoku game.
+ * @return
+ */
+void print_board(Sudoku* sud, int solution);
+
+/*
+ * This function checks if z is valid value for the (x,y) cell in a given board.
+ *
+ * @param board - pointer to a board game
+ * @param x - the row coordinate of the desired cell to check
+ * @param y - the column coordinate of the desired cell to check
+ * @param z - value to check
+ * @return
+ * 1 if invalid or 0 otherwise
+ */
+int not_valid(Board *board,int x, int y ,int z);
 
 #endif /* SUDOKU_H_ */

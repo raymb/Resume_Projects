@@ -11,7 +11,7 @@ all: $(EXEC)
 
 $(EXEC): $(OBJS)
 	$(CC) $(OBJS) $(GUROBI_LIB) -o $@ -lm
-main.o: main.c game.h
+main.o: main.c game.h SPBufferset.h
 	$(CC) $(COMP_FLAG) $(GUROBI_LIB) $(GUROBI_COMP) -c $*.c -lm
 main_aux.o: main_aux.c main_aux.h
 	$(CC) $(COMP_FLAG) -c $*.c 

@@ -3,75 +3,62 @@
 #include <ctype.h>
 #include "sudoku.h"
 
-int save_to_file(Sudoku* sudoku, const char* path){
-	FILE* sudoku_file =  fopen(path, "w");
+int save_to_file(Sudoku* sudoku, const char* path, int mode){
+	FILE* sudoku_file;
 	int row = sudoku->board->row, col = sudoku->board->column;
 	int i, j;
-
-	if(!sudoku_file){
-		file_cannot_be_modified_error();
+	if(!(sudoku_file  =  fopen(path, "w"))){
+		file_cannot_be_modified_error(path);
 		return 0;
 	}
-
-	/* First line */
-	if(fprintf(sudoku_file, "%d %d\n", row, col) != 2){
-		failure_print_for("scanf");
-		return 0;
-	}
-
-	/* Sudoku board */
+	if(fprintf(sudoku_file, "%d %d\n", row, col) < 0){ failure_print_for("fprintf"); return 0;}
 	for(i = 0; i < row*col; ++i){
 		/* Print row */
 		for(j = 0; j < row*col; ++j){
 			if(sudoku->board->grid[i][j]){
-				fprintf(sudoku_file, "%d", sudoku->board->grid[i][j]);
-				if(sudoku->fixed->grid[i][j])
-					fprintf(sudoku_file, ".");
+				if(fprintf(sudoku_file, "%d", sudoku->board->grid[i][j]) < 0){ failure_print_for("fprintf"); return 0;}
+				if(mode == Edit)
+					if(fprintf(sudoku_file, ".") < 0){ failure_print_for("fprintf"); return 0;}
 			}
 			else {
-				fprintf(sudoku_file, "0");
+				if(fprintf(sudoku_file, "0") < 0){ failure_print_for("fprintf"); return 0;}
 			}
-			fprintf(sudoku_file, " ");
+			if(fprintf(sudoku_file, " ") < 0) { failure_print_for("fprintf"); return 0;}
 		}
-		fprintf(sudoku_file, "\n");
+		if(fprintf(sudoku_file, "\n") < 0) { failure_print_for("fprintf"); return 0;}
 	}
 	fclose(sudoku_file);
 	return 1;
 }
 
-/* Don't forget to free any previous board before loading a new board! */
 Sudoku* load_from_file(const char* path){
 	FILE* sudoku_file;
-	Sudoku* sudoku = NULL;
-	int row, col, i, j, cur_cell;
+	int row, col, i, j, cur_cell = 0;
 	char dot;
+	Sudoku *new = NULL;
 	if(!(sudoku_file =  fopen(path, "r"))){
-		file_cannot_be_modified_error();
+		file_cannot_be_opened();
 		return NULL;
 	}
-
-	if(fscanf(sudoku_file, "%d", &row) !=1 )
-		failure_print_for("fscanf");
-	if(fscanf(sudoku_file, "%d", &col) != 1)
-		failure_print_for("fscanf");
-	sudoku = createSudoku(row, col);
+	if(!fscanf(sudoku_file, "%d", &row)){ failure_print_for("fscanf"); return NULL;}
+	if(!fscanf(sudoku_file, "%d", &col)){ failure_print_for("fscanf"); return NULL;}
+	if(!(new = createSudoku(row, col)))
+		return NULL;
 	for(i = 0; i < row*col; ++i){
 		for(j = 0; j < row*col; ++j){
-			if(fscanf(sudoku_file, "%d", &cur_cell)!= 1){
-				failure_print_for("fscanf");
-			};
-			if(cur_cell != 0)
-				sudoku->board->grid[i][j] = cur_cell;
-
+			if(!fscanf(sudoku_file, "%d", &cur_cell)){ failure_print_for("fscanf"); return NULL;}
+			if(cur_cell){
+				new->board->grid[i][j] = cur_cell;
+				new->empty_cells --;
+			}
 			dot = fgetc(sudoku_file);
-			if(dot == EOF)
-				failure_print_for("fgetc");
+		    if (feof(sudoku_file)) { new->empty_cells = -1; failure_print_for("fgetc");return new;}
 			if(dot == '.')
-				sudoku->fixed->grid[i][j] = 1;
+				new->fixed->grid[i][j] = 1;
 		}
 	}
 	fclose(sudoku_file);
-	return sudoku;
+	return new;
 
 
 }

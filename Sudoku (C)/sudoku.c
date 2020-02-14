@@ -2,22 +2,17 @@
 
 
 Board* createBoard(int row, int column){
-	Board *new_board= (Board *)malloc(sizeof(Board));
+	Board *new_board;
 	int **grid;
-
-	if (!new_board){
+	if (!(new_board= (Board *)malloc(sizeof(Board)))){
 		failure_print_for("malloc");
 		return NULL;
 	}
-
-	grid = createGrid(row,column);
-	if(!grid)
+	if(!(grid = createGrid(row,column)))
 		return NULL;
-
 	new_board->row = row;
 	new_board->column = column;
 	new_board->grid = grid;
-
 	return new_board;
 }
 
@@ -26,58 +21,40 @@ Board * copyBoard(Board *board){
 	int row = board->row;
 	int column = board->column;
 	Board *copy = createBoard(row, column);
-
 	for(i = 0; i < row*column; i++)
 		for(j = 0; j < row*column; j++)
 			copy->grid[i][j] = board->grid[i][j];
-
 	return copy;
 }
 
 int** createGrid(int row,int column){
 	int **grid ,i;
-	grid = (int **)calloc(row*column, sizeof(int*));
-
-	if(!grid){
+	if(!(grid = (int **)calloc(row*column, sizeof(int*)))){
 		failure_print_for("calloc");
 		return NULL;
 	}
-
-	for(i = 0; i < row*column; i++){
-		grid[i] =(int *)calloc(row*column,sizeof(int));
-		if(!grid[i]){
+	for(i = 0; i < row*column; i++)
+		if(!(grid[i] =(int *)calloc(row*column,sizeof(int)))){
 			failure_print_for("calloc");
 			return NULL;
 		}
-	}
-
 	return grid;
 }
 
 Sudoku* createSudoku(int block_row, int block_column){
 	Sudoku *new_sudoku;
 	Board *new_board , *new_solution, *new_fixed, *new_marked_errors;
-
-	new_sudoku = (Sudoku *)malloc(sizeof(Sudoku));
-	if(!new_sudoku){
+	if(!(new_sudoku = (Sudoku *)malloc(sizeof(Sudoku)))){
 		failure_print_for("malloc");
 		return NULL;
 	}
-
-	new_fixed = createBoard(block_row, block_column);
-	if(!new_fixed)
+	if(!(new_fixed = createBoard(block_row, block_column)))
 		return NULL;
-
-	new_marked_errors = createBoard(block_row, block_column);
-	if(!new_marked_errors)
+	if(!(new_marked_errors = createBoard(block_row, block_column)))
 		return NULL;
-
-	new_board = createBoard(block_row, block_column);
-	if(!new_board)
+	if(!(new_board = createBoard(block_row, block_column)))
 		return NULL;
-
-	new_solution = createBoard(block_row,block_column);
-	if(!new_solution)
+	if(!(new_solution = createBoard(block_row,block_column)))
 		return NULL;
 
 	new_sudoku->board = new_board;
@@ -116,4 +93,53 @@ void destroySudoku(Sudoku *sudoku){
 	free(sudoku);
 }
 
+void print_board(Sudoku* sud, int solution){
+	int i= 0, j= 0, row = sud->board->row,col = sud->board->column;
+	int value;
+	for (i = 0; i < row*col; ++i) {
+		if(i % row == 0)
+			print_line_seperator(row, col);
+		for (j = 0; j < row*col; ++j){
+			if(j%col == 0)
+				printf("|");
+			printf(" ");
+			value = sud->board->grid[i][j];
+			if(solution)
+				value = sud->solution->grid[i][j];
+			if (value)
+				printf("%2d", value);
+			else
+				printf("  ");
 
+			if(sud->fixed->grid[i][j])
+				printf(".");
+			else
+				if(sud->mark_errors && sud->marked_errors->grid[i][j])
+					printf("*");
+				else
+					printf(" ");
+		}
+		printf("|\n");
+	}
+	print_line_seperator(row, col);
+}
+
+int not_valid(Board *board,int x, int y ,int z){
+	int i ,j , row = board->row,column = board ->column;
+	if(z == 0)
+		return 0;
+	for(i = 0 ; i< row*column;i++){
+		if(board->grid[x][i] == z && i != y)
+			return 1;
+		if(board->grid[i][y] == z && i != x)
+				return 1;
+	}
+	for(i = (x/row)*row; i < (1+ x/row)*row;i ++)
+		for(j = (y/column)*column; j < (1 + y/column)*column; j++){
+			if(i==x && j==y)
+				continue;
+			if(board->grid[i][j]== z)
+				return 1;
+		}
+	return 0;
+}

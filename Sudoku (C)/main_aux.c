@@ -1,19 +1,19 @@
 #include "main_aux.h"
 
 void line_too_long_error(){
-	printf("ERROR: Line is too long.");
+	printf("ERROR: Line is too long.\n");
 }
 
 void command_not_valid_in_current_mode_error(char* command){
-	printf("ERROR: The command %s is not valid in current mode.");
+	printf("ERROR: The command %s is not valid in current mode.\n", command);
 }
 
 void missing_path_parameter(){
-	printf("ERROR: Missing path parameter.");
+	printf("ERROR: Missing path parameter.\n");
 }
 
 void print_invalid_parameter(int param_num){
-	printf("ERROR: The %d parameter is not valid.", param_num);
+	printf("ERROR: The %d parameter is not valid.\n", param_num);
 
 }
 
@@ -41,7 +41,9 @@ void file_open_error_print_edit(){
 void mark_errors_value_print(){
 	printf("ERROR: Field \"marked errors\" value should be 0 or 1.\n");
 }
-
+void guess_value_print(){
+	printf("ERROR: Field \"guess\" value should be 0 or 1.\n");
+}
 void set_cell_value_error_print(int n){
 	printf("ERROR: Given value is not in range 0-%d.\n", n);
 }
@@ -59,7 +61,7 @@ void successful_solution_print(){
 }
 
 void enter_command_print(){
-	printf("Enter your command:\n");
+	printf("Enter your command: ");
 }
 
 void errors_in_board_print(){
@@ -105,22 +107,26 @@ void no_moves_2_redo(){
 }
 void redo_print(int x,int y,int z1,int z2){
 	if(z1 == 0)
-		printf("Redo %d,%d: from _ to %d\n",x,y,z2);
+		printf("Redo %d,%d: from _ to %d.\n",x,y,z2);
 	else if (z2 == 0)
-		printf("Redo %d,%d: from %d to _\n",x,y,z1);
+		printf("Redo %d,%d: from %d to _.\n",x,y,z1);
 	else
-		printf("Redo %d,%d: from %d to %d\n",x,y,z1,z2);
+		printf("Redo %d,%d: from %d to %d.\n",x,y,z1,z2);
 }
 
 void edit_mode_validation_error(){
-	printf("ERROR: Board validation failed.\n");
+	printf("ERROR: Board without a solution cannot be saved.\n");
 }
 
-void file_cannot_be_modified_error(){
-	printf("ERROR: File cannot be created or modified!\n");
+void file_cannot_be_opened(){
+	printf("ERROR: File specified cannot be opened.\n");
 }
 
-void game_saved_to_file_print(char* str){
+void file_cannot_be_modified_error(char* path){
+	printf("ERROR: File specified %s cannot be modified.\n", path);
+}
+
+void game_saved_to_file_print(const char* str){
 	printf("Game saved to file: %s\n", str);
 }
 
@@ -153,7 +159,7 @@ void multiple_solutions_message(){
 }
 
 void cell_set_in_autofill_message(int x, int y, int z){
-	printf("Cell <%d,%d> is set to %d\n",x,y,z);
+	printf("Cell <%d,%d> is set to %d.\n",x,y,z);
 }
 
 void board_reset_message(){
@@ -165,6 +171,15 @@ void exit_message(){
 }
 
 void failure_print_for(char *s){
-	printf("ERROR: %s has failed.\n",s);
+	printf("ERROR: %s has failed",s);
+	perror(" ");
+	printf("Please try again.\n");
 }
 
+void guess_hint_print(int *w, double *c, int len, int x, int y){
+	int i;
+	printf("The following scores were calculated for the cell <%d,%d>:\n",x ,y);
+	for(i = 0 ; i < len; i ++)
+		if(w[i])
+			printf("     The value %d with the score of %f.\n ",w[i], c[(w[i] - 1)]);
+}
